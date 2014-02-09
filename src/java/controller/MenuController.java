@@ -6,13 +6,19 @@
 
 package controller;
 
+import domainobject.MenuDAO;
+import domainobject.MenuDBAccess;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import model.Menu;
+import model.Menu_Entire;
 
 /**
  *
@@ -38,10 +44,10 @@ public class MenuController extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet MenuController</title>");            
+            out.println("<title>Menu</title>");            
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet MenuController at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Menu </h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -59,7 +65,7 @@ public class MenuController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        //processRequest(request, response);
     }
 
     /**
@@ -73,7 +79,37 @@ public class MenuController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+       // processRequest(request, response);
+        String defaultPage="index.jsp";
+        String nextPage=defaultPage;
+        String menu="menu";
+        String menuAction="menuAction";
+        Map menuEntire;
+         
+        switch (request.getParameter(menuAction)){
+            case "placeOrder": 
+                request.setAttribute(menuAction, "orderPlaced");
+                menuEntire = new Menu_Entire(new MenuDAO(new MenuDBAccess())).showMenu();
+                request.setAttribute(menu, menuEntire);
+                nextPage=defaultPage;
+                break;
+            case "getMenu": 
+                menuEntire = new Menu_Entire(new MenuDAO(new MenuDBAccess())).showMenu();
+                request.setAttribute(menu, menuEntire);
+                request.setAttribute(menuAction, "selectItems");
+                nextPage=defaultPage;
+                break;
+            case "orderPlaced": 
+                request.setAttribute(menuAction, "orderPlaced");
+                nextPage=defaultPage;
+                break;
+                
+            default: nextPage=defaultPage;
+        }
+        
+         RequestDispatcher view =
+                request.getRequestDispatcher(nextPage);
+        view.forward(request, response);
     }
 
     /**

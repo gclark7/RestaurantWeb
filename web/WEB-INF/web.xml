@@ -7,7 +7,7 @@
         <session-timeout>30</session-timeout>
     </session-config>
     <servlet>
-        <servlet-name>MenuController</servlet-name>
+        <servlet-name>menu</servlet-name>
         <servlet-class>controller.MenuController</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>

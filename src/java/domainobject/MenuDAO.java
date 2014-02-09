@@ -50,8 +50,7 @@ public class MenuDAO {
 			while( rs.next() ) {
                            List details=new ArrayList();
                             
-                            //details.add((Integer)rs.getInt("item_category"));
-                            
+                            details.add((Integer)rs.getInt("id"));
                             details.add(rs.getString("item_long_description"));
                             details.add((Double)rs.getDouble("price"));
                             menuItems.put(rs.getString("item_description"),details);
@@ -75,8 +74,9 @@ public class MenuDAO {
         return menuItems;
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
         MenuDAO menu = new MenuDAO(new MenuDBAccess());
+        menu.db.connectToDB();
         Map menuItems = menu.getMenuItems();
         Iterator iterator; 
         

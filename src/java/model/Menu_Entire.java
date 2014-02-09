@@ -13,8 +13,16 @@ import java.util.Map;
  *
  * @author gcDataTechnology
  */
-public class Menu_Dinner implements Menu{
+public class Menu_Entire implements Menu{
     MenuDAO menuAccessor;
+    
+    public Menu_Entire(){
+        
+    }
+    
+    public Menu_Entire(MenuDAO menuAccessor){
+        setMenuDAO(menuAccessor);
+    }
     
      @Override
     public void setMenuDAO(MenuDAO menuAccessor) {
