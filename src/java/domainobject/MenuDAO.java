@@ -35,7 +35,6 @@ public class MenuDAO {
         String sql = "SELECT * FROM menu";
         Statement stmt = null;
         ResultSet rs = null;
-        
 		try {
                     if(db.connectToDB()){
 //                        System.out.println("DB connected");

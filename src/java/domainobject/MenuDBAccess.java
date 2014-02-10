@@ -48,6 +48,8 @@ public class MenuDBAccess {
         return connected;
     }
     
+    
+    
     public static void main(String[] args) throws SQLException, ClassNotFoundException{
         
         MenuDBAccess db = new MenuDBAccess();

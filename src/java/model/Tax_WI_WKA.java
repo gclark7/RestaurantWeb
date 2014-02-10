@@ -11,7 +11,7 @@ package model;
  * @author gcDataTechnology
  */
 public class Tax_WI_WKA implements Tax{
-    private final double TAX=0.0010;
+    private double TAX=0.0010;
     private final String ERR_AMOUNT="checkAmount was incorrect";
     
     /**
