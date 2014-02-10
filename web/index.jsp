@@ -28,7 +28,7 @@
                
                     <%
                         if(request.getAttribute("menuAction")!=null && request.getAttribute("menuAction").equals("selectItems")){
-                            out.print("<form id='frmMenu' name='frmMenu' method='POST' action='menu?menuAction=placeOrder'>");
+                            out.print("<form id='frmMenu' name='frmMenu' method='POST' action='order?menuAction=placeOrder'>");
                             //out.print("<select id='menuItems' name='menuItems'>");
                             Map m = (HashMap)request.getAttribute("menu");
                             for(Object s:m.keySet()){
