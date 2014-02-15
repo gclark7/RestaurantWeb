@@ -6,6 +6,7 @@
 
 package domainobject;
 
+import dbaccess.MenuDBAccess;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -13,6 +14,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import model.RestaurantMenuItem;
@@ -23,20 +25,69 @@ import model.RestaurantMenuItem_AnyItem;
  * @author gcDataTechnology
  */
 public class MenuDAO {
-    MenuDBAccess db;
+    private MenuDBAccess db;
+    private final String DATABASE="restaurant";
+    private final String TABLE_MENU="menu";
+    private final String ID="id";
+    private final String LDESCRIPTION="item_long_description";
+    private final String PRICE="price";
+    private final String SDESCRIPTION="item_description";
+    private final String CAT="item_category";
     
+               
+                
     public MenuDAO(MenuDBAccess db){
         this.db=db;
     }
     
-    public Map<Object,List> getMenuItems(){
-        List<Object> itemDetails= new ArrayList();
-        Map menuItems = new HashMap();
+    public Map<String,Object> getMenuItems() throws Exception{
+        //List<Object> itemDetails= new ArrayList();
+        Map<String, Object> mItems=new HashMap();
+        Map<String, List> temp = new LinkedHashMap();
+        List fields = new ArrayList();
+        
+        
+        fields.add(ID);
+        fields.add(CAT);
+        fields.add(SDESCRIPTION);
+        fields.add(LDESCRIPTION);
+        fields.add(PRICE);
+       
+                
+        
+        temp=this.db.getRecords(TABLE_MENU, fields, null, null);
+        if(temp!=null){
+            for(Object t:temp.keySet()){
+//                System.out.println("Line 61 " + (int)temp.get(t).get(0) + " " +
+//                    (int)temp.get(t).get(1) +" "+
+//                    (String)temp.get(t).get(2)+ " " +
+//                    (String)temp.get(t).get(3)+ " "+
+//                    (double)temp.get(t).get(4));
+//                       
+                
+                RestaurantMenuItem item = new RestaurantMenuItem_AnyItem(
+                    Integer.parseInt(temp.get(t).get(0).toString()),
+                    Integer.parseInt(temp.get(t).get(1).toString()), 
+                    (String)temp.get(t).get(2),
+                    (String)temp.get(t).get(3),
+                    Double.parseDouble(temp.get(t).get(4).toString()));
+                
+//                List details = new ArrayList();
+//                for(int i=0;i<menuItems.get(t).size();i++){
+//                    details.add(menuItems.get(t).get(i));
+//                }
+                mItems.put(item.getShortDescription(),item);
+            }
+        }
+        
+        
+        
+        /*
         String sql = "SELECT * FROM menu";
         Statement stmt = null;
         ResultSet rs = null;
 		try {
-                    if(db.connectToDB()){
+                    if(db.openConnection()){
 //                        System.out.println("DB connected");
 			stmt = db.conn.createStatement();
 			rs = stmt.executeQuery(sql);
@@ -71,8 +122,8 @@ public class MenuDAO {
 				System.out.println(e);
 			}
 		}
-        
-        return menuItems;
+        */
+        return mItems;
     }
     
     public RestaurantMenuItem lookupMenuItem(int id){
@@ -82,7 +133,7 @@ public class MenuDAO {
         ResultSet rs = null;
         
 		try {
-                    if(db.connectToDB()){
+                    if(db.openConnection()){
 //                        System.out.println("DB connected");
 			stmt = db.conn.createStatement();
 			rs = stmt.executeQuery(sql);
@@ -117,19 +168,20 @@ public class MenuDAO {
         return item;
     }
     
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, Exception {
         MenuDAO menu = new MenuDAO(new MenuDBAccess());
-        menu.db.connectToDB();
+        menu.db.openConnection();
         Map menuItems = menu.getMenuItems();
-        Iterator iterator; 
+        //Iterator iterator; 
         
         for(Object s:menuItems.keySet()){
-           List details = (ArrayList)menuItems.get(s);
+           //List details = (ArrayList)menuItems.get(s);
             System.out.println(s);
-           iterator = details.iterator();
-           while(iterator.hasNext()){
-                System.out.print(iterator.next());
-           }
+           //iterator = details.iterator();
+           //while(iterator.hasNext()){
+           //     System.out.print(iterator.next());
+           //}
+            System.out.println(menuItems.get(s));
         }
         
         

@@ -4,6 +4,8 @@
     Author     : gcDataTechnology
 --%>
 
+<%@page import="model.RestaurantMenuItem_AnyItem"%>
+<%@page import="model.RestaurantMenuItem"%>
 <%@page import="java.util.List"%>
 <%@page import="java.util.Iterator"%>
 <%@page import="java.util.ArrayList"%>
@@ -32,10 +34,11 @@
                             //out.print("<select id='menuItems' name='menuItems'>");
                             Map m = (HashMap)request.getAttribute("menu");
                             for(Object s:m.keySet()){
-                                List item=(ArrayList)m.get(s);
+                                //List item=(ArrayList)m.get(s);
+                                RestaurantMenuItem item= (RestaurantMenuItem_AnyItem)m.get(s);
                                 out.print("<label>" + s + "</label>"
-                                        + "<input name='itemSelected' type='checkbox' value='" + item.get(0) + "' /> &nbsp;$" + item.get(2));
-                                out.print( "  " + item.get(1) + "<br/><br/>" );
+                                        + "<input name='itemSelected' type='checkbox' value='" + item.getID() + "' /> &nbsp;$" + item.getPrice());
+                                out.print( "  " + item.getLongDescription() + "<br/><br/>" );
                                 /*need better formating
                //use this line   //out.print("<option value='" + item.get(0) + "' >" + s + " " + item.get(1) + "  $" + item.get(2) +"</option>");
                                 //out.print("<option value='" + item.get(0) + "' >" + s + "</option>");

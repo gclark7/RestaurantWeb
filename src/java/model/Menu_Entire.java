@@ -8,6 +8,8 @@ package model;
 
 import domainobject.MenuDAO;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -33,7 +35,13 @@ public class Menu_Entire implements Menu{
     
     @Override
     public Map showMenu() {
-        return menuAccessor.getMenuItems();
+        Map m=null;
+        try {
+            m= menuAccessor.getMenuItems();
+        } catch (Exception ex) {
+            Logger.getLogger(Menu_Entire.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return m;
     }
 
     /**

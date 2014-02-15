@@ -7,7 +7,7 @@
 package controller;
 
 import domainobject.MenuDAO;
-import domainobject.MenuDBAccess;
+import dbaccess.MenuDBAccess;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
