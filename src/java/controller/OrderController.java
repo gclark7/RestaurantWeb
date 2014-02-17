@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -100,7 +102,11 @@ public class OrderController extends HttpServlet {
                 request.setAttribute(menuAction, "summary");
                 String[] order=request.getParameterValues("itemSelected");
                 for(int i=0;i<order.length;i++){
-                     item= new MenuDAO(new MenuDBAccess()).lookupMenuItem((Integer.parseInt(order[i])));
+                    try {
+                        item= new MenuDAO(new MenuDBAccess()).lookupMenuItem((Integer.parseInt(order[i])));
+                    } catch (Exception ex) {
+                        Logger.getLogger(OrderController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                      reciept.put(item.getShortDescription(), item.getPrice());
                      totalCost+=item.getPrice();
                 }

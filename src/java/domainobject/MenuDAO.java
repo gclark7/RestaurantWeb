@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import model.RestaurantMenuItem;
 import model.RestaurantMenuItem_AnyItem;
 
@@ -42,7 +43,7 @@ public class MenuDAO {
     
     public Map<String,Object> getMenuItems() throws Exception{
         //List<Object> itemDetails= new ArrayList();
-        Map<String, Object> mItems=new HashMap();
+        Map<String, Object> mItems=new LinkedHashMap();
         Map<String, List> temp = new LinkedHashMap();
         List fields = new ArrayList();
         
@@ -126,54 +127,132 @@ public class MenuDAO {
         return mItems;
     }
     
-    public RestaurantMenuItem lookupMenuItem(int id){
-        RestaurantMenuItem item=null;
-         String sql = "SELECT * FROM menu WHERE id="+id;
-        Statement stmt = null;
-        ResultSet rs = null;
+    public RestaurantMenuItem lookupMenuItem(int id) throws Exception{
         
-		try {
-                    if(db.openConnection()){
-//                        System.out.println("DB connected");
-			stmt = db.conn.createStatement();
-			rs = stmt.executeQuery(sql);
-                        ResultSetMetaData md = rs.getMetaData();
-                        
-                        
-//                        for(int i=1;i<md.getColumnCount();i++){
-//                            itemDetails.add(md.getColumnName(i));
-//                        }
-//                        menuItems.put("Headers", itemDetails);
-                        if(rs!=null){
-                            rs.next();
-                            item=new RestaurantMenuItem_AnyItem(rs.getInt("id"),rs.getInt("item_category"),
-                                                rs.getString("item_description"),rs.getString("item_long_description"),
-                                                rs.getDouble("price"));
-                        }
-                    }
-                 } catch (SQLException sqle) {
-			System.out.println(sqle);
-		} catch (Exception e) {
-			System.out.println(e);
-		} finally {
-			// Make sure we close the statement and connection objects no matter what.
-			// Since these also throw checked exceptions, we need a nested try-catch
-			try {
-				stmt.close();
-				db.conn.close();
-			} catch(Exception e) {
-				System.out.println(e);
-			}
-		}
+        Map<String, Object> mItems=new LinkedHashMap();
+        Map<String, List> temp = new LinkedHashMap();
+        List fields = new ArrayList();
+        RestaurantMenuItem item =null;
+        
+        
+        fields.add(ID);
+        fields.add(CAT);
+        fields.add(SDESCRIPTION);
+        fields.add(LDESCRIPTION);
+        fields.add(PRICE);
+       
+                
+        
+        temp=this.db.getRecords(TABLE_MENU, fields, ID, id);
+        if(temp!=null){
+            for(Object t:temp.keySet()){
+                
+                item = new RestaurantMenuItem_AnyItem(
+                    Integer.parseInt(temp.get(t).get(0).toString()),
+                    Integer.parseInt(temp.get(t).get(1).toString()), 
+                    (String)temp.get(t).get(2),
+                    (String)temp.get(t).get(3),
+                    Double.parseDouble(temp.get(t).get(4).toString()));
+                
+                
+                mItems.put(item.getShortDescription(),item);
+            }
+        }
+        
         return item;
+    }
+    
+    /**
+     * Works with method createAdminFormInsertMenuItems() to ensure data integrity 
+     * 
+     * @param columns_values Map of columns and values to insert into table
+     * @return int value indicating number of records successfully inserted
+     * @throws Exception 
+     */
+    public int insertNewMenuItems(List<Map> columns_values) throws Exception{
+        List fields= new Vector();
+        List values= null;
+        int count=0;
+        fields.add(LDESCRIPTION);
+        fields.add(SDESCRIPTION);
+        fields.add(CAT);
+        fields.add(PRICE);
+        
+        if(columns_values!=null){
+            for(int i=0;i<columns_values.size();i++){
+                values= new Vector();
+                values.add((String)columns_values.get(i).get(LDESCRIPTION));
+                values.add((String)columns_values.get(i).get(SDESCRIPTION));
+                values.add(Integer.parseInt(columns_values.get(i).get(CAT).toString()));
+                values.add(Double.parseDouble(columns_values.get(i).get(PRICE).toString()));
+                
+                if(db.insertRecords(TABLE_MENU, fields, values)){
+                    count++;
+                };
+            }
+        }
+        return count;
+    }
+    
+    public int updateMenuItems(Map columns_values, String whereField, Object whereValue) throws Exception{
+        int count=0;
+        if(columns_values!=null && whereField!=null && whereValue!=null){
+            List fields=new Vector();
+            List colDescriptors=new Vector();
+            List values= new Vector();
+            fields.add(LDESCRIPTION);
+            fields.add(SDESCRIPTION);
+            fields.add(CAT);
+            fields.add(PRICE);
+            for(Object o:columns_values.keySet()){
+                if(columns_values.get(o)!=null){
+                    colDescriptors.add(o);
+                    Object oj = columns_values.get(o);
+                    if(oj instanceof String){
+                           values.add((String)oj );
+                    } else if(oj instanceof Integer ){
+                            values.add(((Integer)oj).intValue() );
+                    } else if(oj instanceof Long ){
+                            values.add(((Long)oj).longValue() );
+                    } else if(oj instanceof Double ){
+                            values.add(((Double)oj).doubleValue() );
+                    } else if(oj instanceof java.sql.Date ){
+                           values.add((java.sql.Date)oj );
+                    } else if(oj instanceof Boolean ){
+                            values.add(((Boolean)oj).booleanValue() );
+                    } else {
+                            if(oj != null){
+                                values.add(oj);
+                            }
+                    }
+                        
+                }
+                
+//                values.add((String)columns_values.get(i).get(LDESCRIPTION));
+//                values.add((String)columns_values.get(i).get(SDESCRIPTION));
+//                values.add(Integer.parseInt(columns_values.get(i).get(CAT).toString()));
+//                values.add(Double.parseDouble(columns_values.get(i).get(PRICE).toString()));
+               
+            }
+             count+=(db.updateRecords(TABLE_MENU, colDescriptors, values, whereField, whereValue));
+        }
+        return count;
+    }
+    
+    public int deleteRecords(int id) throws Exception{
+        int count=0;
+        
+            count+=this.db.deleteRecords(TABLE_MENU, ID, id);
+      
+        return count;
     }
     
     public static void main(String[] args) throws SQLException, ClassNotFoundException, Exception {
         MenuDAO menu = new MenuDAO(new MenuDBAccess());
-        menu.db.openConnection();
-        Map menuItems = menu.getMenuItems();
+        //menu.db.openConnection();
+        Map menuItems =  menu.getMenuItems();
         //Iterator iterator; 
-        
+        RestaurantMenuItem_AnyItem item=null;
         for(Object s:menuItems.keySet()){
            //List details = (ArrayList)menuItems.get(s);
             System.out.println(s);
@@ -181,9 +260,38 @@ public class MenuDAO {
            //while(iterator.hasNext()){
            //     System.out.print(iterator.next());
            //}
-            System.out.println(menuItems.get(s));
+            item=(RestaurantMenuItem_AnyItem)menuItems.get(s);
+            System.out.println(item.getLongDescription() + " \n" + item.getShortDescription() + "\n\n");
         }
+/*
+        List records=new Vector();
+        //List values = new Vector();
+        Map m = new HashMap();
+        m.put("item_long_description", "Spegehatti in meat sauce");
+        m.put("price", 15.12);
+        m.put("item_description", "Speghetti");
+        m.put("item_category",3);
+        records.add(m);
         
+        m = new HashMap();
+        m.put("item_long_description", "Vegetarian medly");
+        m.put("price", 75.28);
+        m.put("item_description", "Vegetarian Soup");
+        m.put("item_category",1);
+        records.add(m);
         
+     
+        
+        System.out.println(menu.insertNewMenuItems(records));
+        */
+        
+        //test update
+        /*
+        Map m = new HashMap();
+        m.put("item_long_description", "Angel Hair Pasta in meat sauce");
+        System.out.println(menu.updateMenuItems(m, "item_long_description", "Spegehatti in meat sauce"));
+        */
+        System.out.println(menu.lookupMenuItem(1).getLongDescription());
+        System.out.println(menu.deleteRecords(5));
     }
 }

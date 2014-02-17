@@ -32,8 +32,10 @@ public class MenuDBAccess implements DBAccessor{
     private String password;
     private final String CONN_FAILED="Connection Failed";
     private final String SELECT="SELECT";
-    private final String INSERT="INSERT";
+    private final String INSERT="INSERT INTO";
     private final String UPDATE="UPDATE";
+    private final String SET="SET";
+    private final String VALUES="VALUES";
     private final String HAVING="HAVING";
     private final String GROUP_BY="GROUP BY";
     private final String WHERE="WHERE";
@@ -41,6 +43,9 @@ public class MenuDBAccess implements DBAccessor{
     private final String ORDER_BY="Order By";
     private final String ASC="ASC";
     private final String DESC="DESC";
+    private final String ERR_DB="DB Error";
+    private final String DELETE="DELETE";
+            
         
     //testing purposes --> static values hard coded for lab only
     public MenuDBAccess(){
@@ -67,7 +72,7 @@ public class MenuDBAccess implements DBAccessor{
               //this.conn = DriverManager.getConnection(url);
               connected=true;
 	}catch(Exception e){
-                    System.out.println("DB Error" + e);
+                    System.out.println(ERR_DB + e);
         }
 		
                 
@@ -94,7 +99,7 @@ public class MenuDBAccess implements DBAccessor{
               //this.conn = DriverManager.getConnection(url);
               connected=true;
 	}catch(Exception e){
-                    System.out.println("DB Error" + e);
+                    System.out.println(ERR_DB + e);
         }
 		
                 
@@ -105,10 +110,12 @@ public class MenuDBAccess implements DBAccessor{
 
     @Override
     public void closeConnection() throws SQLException {
-        conn.close(); //To change body of generated methods, choose Tools | Templates.
+        conn.close();
     }
 
     /**
+     * May be better served to provide List<Map> whereField_values
+     * 
      * Will use the first colDescriptor as the Map key, if not provided the database default will be used
      * @param tableName
      * @param colDescriptors
@@ -180,6 +187,8 @@ public class MenuDBAccess implements DBAccessor{
     }
 
     /**
+     * May be better served to provide List<Map> whereField_values
+     * 
      * Will use the first colDescriptor as the Map key, if not provided the database default will be used
      * Provide a tableName to query the database.
      * Provide Only a tableName to retrieve all Fields
@@ -194,26 +203,157 @@ public class MenuDBAccess implements DBAccessor{
      */
     @Override
     public Map getRecord(String tableName, List colDescriptors, String whereField, Object whereValue) throws SQLException, Exception {
-        Map m=null;
-        
-        
-        
-        return m;
+        return getRecords(tableName, colDescriptors, whereField, whereValue);
     }
 
+    /**
+     * May be better served to provide List<Map> columns_values
+     * 
+     * Inserts the values into the supplied table
+     * 
+     * @param tableName table to insert records into
+     * @param colDescriptors columns to insert values into
+     * @param values values to insert into the table
+     * @return true / false indicating some or all records were inserted
+     * @throws SQLException
+     * @throws Exception 
+     */
     @Override
     public boolean insertRecords(String tableName, List colDescriptors, List values) throws SQLException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        boolean inserted=false;
+        //PreparedStatement ps = null;
+        Statement stmt=null;
+        StringBuffer sb=null;
+        
+        //check for tableName && values- if null do not procede
+        if(tableName!=null && values!=null){
+            //build the command
+            sb=new StringBuffer();
+            sb.append(INSERT + " " + tableName);
+            if(colDescriptors!=null){//may change this later to take only values
+                //add columns
+                sb.append("(");
+                for(Object col:colDescriptors){
+                    sb.append(col + ", ");
+                }
+                //remove last comma
+                sb.deleteCharAt(sb.lastIndexOf(", "));
+                //close columns - add values
+                sb.append(") " +VALUES + "(" );
+                for(Object val:values){
+                    sb.append("'" + val + "', ");
+                }
+                //remove last comma
+                sb.deleteCharAt(sb.lastIndexOf(", "));
+                sb.append(")");
+            }
+        }
+        
+        //execute statement
+        try{
+            openConnection();
+            stmt=conn.createStatement();
+            stmt.execute(sb.toString());
+            inserted=true;
+        }catch(SQLException s){
+                System.out.println(sb.toString());
+                throw s;
+        }finally{
+                try{
+                    stmt.close();
+                    closeConnection();
+                }catch(SQLException s){
+                    throw s;
+                }
+        }
+        
+        return inserted;
+        
     }
 
+    /**
+     * Must provide all parameters for this method to run
+     * updates the table with the values provided in the columns specified according to the where criteria
+     * @param tableName table to update
+     * @param colDescriptors specified fields
+     * @param values new values for specified fields
+     * @param whereField_whereValue Map of fieldNames and value criteria
+     * @return int value representing the number of records successfully updated
+     * @throws SQLException
+     * @throws Exception 
+     */
     @Override
     public int updateRecords(String tableName, List colDescriptors, List values, String whereField, Object whereValue) throws SQLException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+         boolean inserted=false;
+         int count=0;
+        //PreparedStatement ps = null;
+        Statement stmt=null;
+        StringBuffer sb=null;
+        if(tableName!=null && colDescriptors!=null && values!=null && whereField!=null && whereValue!=null){
+            sb=new StringBuffer();
+            sb.append(UPDATE + " " + tableName + " " + SET + " ");
+            for(int i=0;i<colDescriptors.size();i++){
+                sb.append(colDescriptors.get(i) + "='" + values.get(i)+"', ");
+            }
+            //remove excess comma
+            sb.deleteCharAt(sb.lastIndexOf(", "));
+            sb.append(" " + WHERE + " " + whereField + "='"+ whereValue + "'");
+        }
+        //build the statement & execute
+        
+        //execute statement
+        try{
+            openConnection();
+            stmt=conn.createStatement();
+            stmt.execute(sb.toString());
+            inserted=true;
+            count++;
+        }catch(SQLException s){
+                System.out.println(sb.toString());
+                throw s;
+        }finally{
+                try{
+                    stmt.close();
+                    closeConnection();
+                }catch(SQLException s){
+                    throw s;
+                }
+        }
+        
+        return count;
     }
 
     @Override
     public int deleteRecords(String tableName, String whereField, Object whereValue) throws SQLException, Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int count=0;
+         Statement stmt=null;
+        StringBuffer sb=null;
+        if(tableName!=null && whereField!=null && whereValue!=null){
+            sb=new StringBuffer();
+            sb.append(DELETE + " " + FROM + " " + tableName +" " + WHERE + " " + whereField + "= '" + whereValue + "'");
+            System.out.println(sb.toString());
+        }
+        //build the statement & execute
+        
+        //execute statement
+        try{
+            openConnection();
+            stmt=conn.createStatement();
+            stmt.execute(sb.toString());
+            count++;
+        }catch(SQLException s){
+                System.out.println(sb.toString());
+                throw s;
+        }finally{
+                try{
+                    stmt.close();
+                    closeConnection();
+                }catch(SQLException s){
+                    throw s;
+                }
+        }
+        return count;
     }
             
  
@@ -246,6 +386,8 @@ public class MenuDBAccess implements DBAccessor{
         } catch (Exception ex) {
             System.out.println("In Main " +  ex);
         }
+        
+        
     }
      
      

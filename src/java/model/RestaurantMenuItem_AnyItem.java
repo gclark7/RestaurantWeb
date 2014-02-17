@@ -22,7 +22,7 @@ public class RestaurantMenuItem_AnyItem implements RestaurantMenuItem{
     public RestaurantMenuItem_AnyItem(int id, int catID, String description, String lngDescription, double price){
         setPrice(price);
         setShortDescription(description);
-        setLongDescription(description);
+        setLongDescription(lngDescription);
         setCategoryID(catID);
         setID(id);
     }
